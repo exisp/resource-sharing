@@ -8,3 +8,5 @@ Please upload something civilized
 Please do not lead a battle in the issue
 
 最后,感谢您的支持
+(本仓库的软件亲测安全无毒,请放心食用)
+(话说我说的这句话好像某下载站小编的口吻...)
