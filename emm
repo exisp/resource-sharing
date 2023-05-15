@@ -1,0 +1,72 @@
+import threading
+import time
+import queue
+
+class Elevator:
+    def __init__(self):
+        self.state = 0 # 0:停在某层门开着 1:停在某层门关着 2:上升 3:下降
+        self.direction = 0 # 0:向下 1:向上
+        self.current_floor = 1 # 当前楼层
+        self.target_floors = [] # 目标楼层队列
+        self.message_queue = queue.Queue() # 消息队列
+
+    def run(self):
+        while True:
+            if not self.message_queue.empty():
+                message = self.message_queue.get()
+                if message == 'open':
+                    print('电梯门已打开')
+                    time.sleep(2)
+                    print('电梯门已关闭')
+                elif message == 'up':
+                    print('电梯上升中...')
+                    time.sleep(3)
+                    self.current_floor += 1
+                    print('电梯到达%d楼' % self.current_floor)
+                elif message == 'down':
+                    print('电梯下降中...')
+                    time.sleep(3)
+                    self.current_floor -= 1
+                    print('电梯到达%d楼' % self.current_floor)
+            else:
+                if len(self.target_floors) > 0:
+                    target_floor = self.target_floors[0]
+                    if target_floor > self.current_floor:
+                        self.direction = 1
+                        self.state = 2
+                        self.message_queue.put('up')
+                    elif target_floor < self.current_floor:
+                        self.direction = 0
+                        self.state = 3
+                        self.message_queue.put('down')
+                    else:
+                        self.target_floors.pop(0)
+                        self.message_queue.put('open')
+                else:
+                    time.sleep(1)
+
+class ElevatorController:
+    def __init__(self):
+        self.elevator_list = []
+        for i in range(5):
+            elevator = Elevator()
+            elevator_thread = threading.Thread(target=elevator.run)
+            elevator_thread.start()
+            self.elevator_list.append(elevator)
+
+    def call_elevator(self, floor):
+        min_distance = float('inf')
+        selected_elevator = None
+        for elevator in self.elevator_list:
+            distance = abs(elevator.current_floor - floor)
+            if distance < min_distance:
+                min_distance = distance
+                selected_elevator = elevator
+
+        selected_elevator.target_floors.append(floor)
+
+if __name__ == '__main__':
+    controller = ElevatorController()
+    controller.call_elevator(3)
+    controller.call_elevator(5)
+    controller.call_elevator(2)
